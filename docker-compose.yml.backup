@@ -143,9 +143,6 @@ services:
       - ./videos:/data/videos
       - ./har:/data/har
       - ./.streamlit:/app/.streamlit
-      # 前端开发模式挂载 - 只挂载源代码目录，避免覆盖容器运行时文件
-      - ./skyvern-frontend/src:/app/src
-      - ./skyvern-frontend/public:/app/public
     env_file:
       - skyvern-frontend/.env
     environment: {}
@@ -167,47 +164,47 @@ services:
 # uncomment for local usage of `vaultwarden` & bitwarden-cli - see more at: https://github.com/dani-garcia/vaultwarden
 # First this container needs to be started and configured to sign up, create master password and organization
 # Once created, under SETTINGS/SECURITY/KEYS/API you should be able to get client id and secret for CLI & Skyvern integrations
-  vaultwarden:
-    image: vaultwarden/server:latest-alpine
-    container_name: vaultwarden
-    restart: unless-stopped
-    environment:
-      # DOMAIN: "https://vaultwarden.example.com"  # required when using a reverse proxy; your domain; vaultwarden needs to know it's https to work properly with attachments
-      SIGNUPS_ALLOWED: "true" # Deactivate this with "false" after you have created your account so that no strangers can register
-    volumes:
-      - ./vaultwarden-data:/data/ # the path before the : can be changed
-    ports:
-      - 127.0.0.1:11002:80 # you can replace the 11002 with your preferred port
+#  vaultwarden:
+#    image: vaultwarden/server:latest-alpine
+#    container_name: vaultwarden
+#    restart: unless-stopped
+#    environment:
+#      # DOMAIN: "https://vaultwarden.example.com"  # required when using a reverse proxy; your domain; vaultwarden needs to know it's https to work properly with attachments
+#      SIGNUPS_ALLOWED: "true" # Deactivate this with "false" after you have created your account so that no strangers can register
+#    volumes:
+#      - ~/vw-data/:/data/ # the path before the : can be changed
+#    ports:
+#      - 127.0.0.1:11002:80 # you can replace the 11002 with your preferred port
 
 # Bitwarden CLI Server (provides REST API endpoints for Skyvern)
 # Once you have master password and api credentials, you can set them below and this CLI should start providing secure access for Skyvern to Vaultwarden
-  bitwarden-cli:
-    build:
-      context: ./bitwarden-cli-server
-      dockerfile: Dockerfile
-    environment:
-      # Vaultwarden server URL
-      BW_HOST: "http://vaultwarden:80"
-      # API credentials for vaultwarden
-      BW_CLIENTID: "user.your-client-id-here"
-      BW_CLIENTSECRET: "your-client-secret-here"
-      # Master password for unlocking vault
-      BW_PASSWORD: "your-master-password-here"
-    ports:
-      # Bind to localhost only for security
-      - "127.0.0.1:8002:8087"
-    restart: unless-stopped
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8087/status" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    depends_on:
-      vaultwarden:
-        condition: service_healthy
-    volumes:
-      # Optional: persist Bitwarden CLI config
-      - ./bitwarden-cli-config:/app/.config
-    labels:
-      - "traefik.enable=false"  # Don't expose via reverse proxy
+#  bitwarden-cli:
+#    build:
+#      context: ./bitwarden-cli-server
+#      dockerfile: Dockerfile
+#    environment:
+#      # Vaultwarden server URL
+#      BW_HOST: "http://vaultwarden"
+#      # API credentials for vaultwarden
+#      BW_CLIENTID: "user.your-client-id-here"
+#      BW_CLIENTSECRET: "your-client-secret-here"
+#      # Master password for unlocking vault
+#      BW_PASSWORD: "your-master-password-here"
+#    ports:
+#      # Bind to localhost only for security
+#      - "127.0.0.1:8002:8087"
+#    restart: unless-stopped
+#    healthcheck:
+#      test: [ "CMD", "curl", "-f", "http://localhost:8087/status" ]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 5
+#      start_period: 30s
+#    depends_on:
+#      vaultwarden:
+#        condition: service_healthy
+#    volumes:
+#      # Optional: persist Bitwarden CLI config
+#      - ~/bitwarden-cli-config:/app/.config
+#    labels:
+#      - "traefik.enable=false"  # Don't expose via reverse proxy

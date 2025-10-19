@@ -154,6 +154,13 @@ export type CreateTaskRequest = {
   include_action_history_in_verification?: boolean | null;
   max_screenshot_scrolls?: number | null;
   browser_address?: string | null;
+  browser_config?: {
+    type: "skyvern_default" | "local_custom" | "adspower";
+    chrome_path?: string;
+    chrome_args?: string[];
+    adspower_user_id?: string;
+    adspower_group_id?: string;
+  } | null;
 };
 
 export type User = {

@@ -20,6 +20,7 @@ from skyvern.forge.sdk.schemas.files import FileInfo
 from skyvern.schemas.docs.doc_strings import PROXY_LOCATION_DOC_STRING
 from skyvern.schemas.runs import ProxyLocation
 from skyvern.utils.url_validators import validate_url
+from skyvern.forge.sdk.schemas.browser import BrowserConfig
 
 
 class TaskBase(BaseModel):
@@ -117,6 +118,10 @@ class TaskBase(BaseModel):
         default=None,
         description="The maximum time to wait for downloads to complete, in seconds. If not set, defaults to BROWSER_DOWNLOAD_TIMEOUT seconds.",
         examples=[15.0],
+    )
+    browser_config: BrowserConfig | None = Field(
+        default=None,
+        description="浏览器配置，指定任务使用的浏览器类型和相关参数",
     )
 
 

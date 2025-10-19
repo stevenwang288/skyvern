@@ -1,12 +1,12 @@
 ﻿{
     "MCPChoiceName":  "跳过MCP设置      不做MCP配置，继续后续流程",
-    "ProviderKey":  "ms-fb3172ba-cb44-4675-b23b-cc505ffde93e",
-    "ProviderName":  "modelscope9",
+    "ProviderKey":  "sk-d1fff71e09471b95ce05897ccf0d0a94",
+    "ProviderName":  "iflow1",
     "MCPChoice":  0,
-    "LastUsedDate":  "2025-10-19 23:29:51",
+    "LastUsedDate":  "2025-10-20 03:19:12",
     "Terminal":  "Windows Terminal",
-    "ProviderUrl":  "https://api-inference.modelscope.cn/v1",
+    "ProviderUrl":  "https://apis.iflow.cn/v1",
     "Model":  "glm-4.6",
     "WorkingDir":  "D:\\OneDrive\\steven\\code\\1\\ads2\\skyvern-main",
-    "ProviderId":  9
+    "ProviderId":  1
 }

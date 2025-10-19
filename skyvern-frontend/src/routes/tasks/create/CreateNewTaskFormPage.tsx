@@ -65,6 +65,9 @@ function CreateNewTaskFormPage() {
             maxScreenshotScrolls: null,
             extraHttpHeaders: null,
             cdpAddress: null,
+            browser_config: {
+              type: "skyvern_default"
+            },
           }}
         />
       </div>
@@ -139,6 +142,9 @@ function CreateNewTaskFormPage() {
             ? JSON.stringify(data.extra_http_headers)
             : null,
           cdpAddress: null,
+          browser_config: {
+            type: "skyvern_default"
+          },
         }}
       />
     </div>

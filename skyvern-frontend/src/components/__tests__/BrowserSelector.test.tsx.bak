@@ -1,0 +1,400 @@
+// 5.2 创建前端组件测试
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { BrowserSelector } from '../BrowserSelector';
+import { useForm, FormProvider } from 'react-hook-form';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserType } from '../../api/browser-types';
+import { vi, describe, test, expect, beforeEach } from 'vitest';
+
+// Mock API
+vi.mock('../../api/browser-api', () => ({
+  getAdsPowerStatus: vi.fn(),
+  validateChromePath: vi.fn()
+}));
+
+// Mock UI组件
+vi.mock('../ui/select', () => ({
+  Select: ({ children, value, onValueChange }: any) => (
+    <select value={value} onChange={(e) => onValueChange(e.target.value)} data-testid="browser-type-select">
+      {children}
+    </select>
+  ),
+  SelectContent: ({ children }: any) => <>{children}</>,
+  SelectItem: ({ children, value }: any) => <option value={value}>{children}</option>,
+  SelectTrigger: ({ children }: any) => <>{children}</>,
+  SelectValue: ({ placeholder }: any) => <span>{placeholder || 'Select'}</span>
+}));
+
+vi.mock('../ui/input', () => ({
+  Input: (props: any) => <input {...props} data-testid="chrome-path-input" />
+}));
+
+vi.mock('../ui/button', () => ({
+  Button: ({ children, onClick, disabled }: any) => (
+    <button onClick={onClick} disabled={disabled} data-testid="test-button">
+      {children}
+    </button>
+  )
+}));
+
+vi.mock('../ui/alert', () => ({
+  Alert: ({ children, className }: any) => <div className={className}>{children}</div>,
+  AlertDescription: ({ children, className }: any) => <div className={className}>{children}</div>
+}));
+
+vi.mock('../ui/form', () => ({
+  FormField: ({ render }: any) => render({ field: { value: '', onChange: vi.fn() } }),
+  FormItem: ({ children }: any) => <div>{children}</div>,
+  FormLabel: ({ children }: any) => <label>{children}</label>,
+  FormControl: ({ children }: any) => <div>{children}</div>,
+  FormMessage: () => null,
+  FormDescription: ({ children }: any) => <div className="text-sm text-gray-600">{children}</div>
+}));
+
+// Mock图标
+vi.mock('lucide-react', () => ({
+  RefreshCw: () => <span>🔄</span>,
+  ExternalLink: () => <span>🔗</span>,
+  CheckCircle: () => <span>✅</span>,
+  XCircle: () => <span>❌</span>,
+  Chrome: () => <span>🌐</span>,
+  Shield: () => <span>🛡️</span>,
+  Zap: () => <span>⚡</span>
+}));
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false }
+    }
+  });
+
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+};
+
+const TestFormWrapper = ({ children }: { children: React.ReactNode }) => {
+  const methods = useForm({
+    defaultValues: {
+      browser_config: {
+        type: BrowserType.SkyvernDefault
+      }
+    }
+  });
+
+  return (
+    <FormProvider {...methods}>
+      {children}
+    </FormProvider>
+  );
+};
+
+describe('BrowserSelector Component', () => {
+  const { getAdsPowerStatus, validateChromePath } = require('../../api/browser-api');
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('renders browser type selector with all options', () => {
+    render(
+      <TestFormWrapper>
+        <BrowserSelector control={useForm().control} />
+      </TestFormWrapper>,
+      { wrapper: createWrapper() }
+    );
+
+    const select = screen.getByTestId('browser-type-select');
+    expect(select).toBeInTheDocument();
+
+    // Check if all browser types are available
+    expect(screen.getByText('🤖 Skyvern默认浏览器')).toBeInTheDocument();
+    expect(screen.getByText('🌐 本地自定义Chrome')).toBeInTheDocument();
+    expect(screen.getByText('🛡️ AdsPower防关联浏览器')).toBeInTheDocument();
+  });
+
+  test('shows local Chrome configuration when LocalCustom is selected', async () => {
+    const { getAdsPowerStatus } = require('../../api/browser-api');
+    getAdsPowerStatus.mockResolvedValue({
+      available: false,
+      message: 'AdsPower not available',
+      browsers: []
+    });
+
+    const TestComponent = () => {
+      const methods = useForm({
+        defaultValues: {
+          browser_config: {
+            type: BrowserType.LocalCustom
+          }
+        }
+      });
+
+      return (
+        <FormProvider {...methods}>
+          <BrowserSelector control={methods.control} />
+        </FormProvider>
+      );
+    };
+
+    render(<TestComponent />, { wrapper: createWrapper() });
+
+    // Should show local Chrome configuration panel
+    expect(screen.getByText('本地Chrome配置')).toBeInTheDocument();
+    expect(screen.getByText('Chrome执行文件路径 *')).toBeInTheDocument();
+    expect(screen.getByText('Chrome启动参数（可选）')).toBeInTheDocument();
+
+    // Should show Chrome path input
+    const chromePathInput = screen.getByTestId('chrome-path-input');
+    expect(chromePathInput).toBeInTheDocument();
+  });
+
+  test('shows AdsPower configuration when AdsPower is selected', async () => {
+    getAdsPowerStatus.mockResolvedValue({
+      available: true,
+      message: 'AdsPower is available',
+      browsers: [
+        {
+          user_id: 'user1',
+          name: 'Browser 1',
+          serial_number: 'SN123',
+          status: 'Active'
+        }
+      ]
+    });
+
+    const TestComponent = () => {
+      const methods = useForm({
+        defaultValues: {
+          browser_config: {
+            type: BrowserType.AdsPower
+          }
+        }
+      });
+
+      return (
+        <FormProvider {...methods}>
+          <BrowserSelector control={methods.control} />
+        </FormProvider>
+      );
+    };
+
+    render(<TestComponent />, { wrapper: createWrapper() });
+
+    // Wait for AdsPower status to load
+    await waitFor(() => {
+      expect(screen.getByText('AdsPower防关联浏览器')).toBeInTheDocument();
+    });
+
+    // Should show AdsPower configuration panel
+    expect(screen.getByText('选择AdsPower浏览器 *')).toBeInTheDocument();
+  });
+
+  test('validates Chrome path when LocalCustom is selected', async () => {
+    validateChromePath.mockResolvedValue({
+      valid: true,
+      message: 'Chrome path is valid',
+      path: '/usr/bin/google-chrome'
+    });
+
+    const TestComponent = () => {
+      const methods = useForm({
+        defaultValues: {
+          browser_config: {
+            type: BrowserType.LocalCustom,
+            chrome_path: '/usr/bin/google-chrome'
+          }
+        }
+      });
+
+      return (
+        <FormProvider {...methods}>
+          <BrowserSelector control={methods.control} />
+        </FormProvider>
+      );
+    };
+
+    render(<TestComponent />, { wrapper: createWrapper() });
+
+    // Wait for Chrome path validation
+    await waitFor(() => {
+      expect(validateChromePath).toHaveBeenCalledWith('/usr/bin/google-chrome');
+    });
+  });
+
+  test('shows AdsPower status when unavailable', async () => {
+    getAdsPowerStatus.mockResolvedValue({
+      available: false,
+      message: 'AdsPower client is not running',
+      browsers: []
+    });
+
+    const TestComponent = () => {
+      const methods = useForm({
+        defaultValues: {
+          browser_config: {
+            type: BrowserType.AdsPower
+          }
+        }
+      });
+
+      return (
+        <FormProvider {...methods}>
+          <BrowserSelector control={methods.control} />
+        </FormProvider>
+      );
+    };
+
+    render(<TestComponent />, { wrapper: createWrapper() });
+
+    // Wait for AdsPower status to load
+    await waitFor(() => {
+      expect(screen.getByText('AdsPower client is not running')).toBeInTheDocument();
+    });
+
+    // Should show troubleshooting tips
+    expect(screen.getByText('请确保：')).toBeInTheDocument();
+    expect(screen.getByText('AdsPower客户端已启动并登录')).toBeInTheDocument();
+  });
+
+  test('opens AdsPower download link when button is clicked', async () => {
+    const mockWindowOpen = vi.fn();
+    window.open = mockWindowOpen;
+
+    getAdsPowerStatus.mockResolvedValue({
+      available: false,
+      message: 'AdsPower client is not running',
+      browsers: []
+    });
+
+    const TestComponent = () => {
+      const methods = useForm({
+        defaultValues: {
+          browser_config: {
+            type: BrowserType.AdsPower
+          }
+        }
+      });
+
+      return (
+        <FormProvider {...methods}>
+          <BrowserSelector control={methods.control} />
+        </FormProvider>
+      );
+    };
+
+    render(<TestComponent />, { wrapper: createWrapper() });
+
+    // Wait for AdsPower status to load
+    await waitFor(() => {
+      expect(screen.getByText('下载AdsPower')).toBeInTheDocument();
+    });
+
+    const downloadButton = screen.getByText('下载AdsPower');
+    fireEvent.click(downloadButton);
+
+    expect(mockWindowOpen).toHaveBeenCalledWith('https://www.adspower.com/download', '_blank');
+  });
+
+  test('refreshes AdsPower status when refresh button is clicked', async () => {
+    getAdsPowerStatus.mockResolvedValue({
+      available: true,
+      message: 'AdsPower is available',
+      browsers: []
+    });
+
+    const TestComponent = () => {
+      const methods = useForm({
+        defaultValues: {
+          browser_config: {
+            type: BrowserType.AdsPower
+          }
+        }
+      });
+
+      return (
+        <FormProvider {...methods}>
+          <BrowserSelector control={methods.control} />
+        </FormProvider>
+      );
+    };
+
+    render(<TestComponent />, { wrapper: createWrapper() });
+
+    // Wait for AdsPower status to load
+    await waitFor(() => {
+      expect(screen.getByText('刷新')).toBeInTheDocument();
+    });
+
+    const refreshButton = screen.getByText('刷新');
+    fireEvent.click(refreshButton);
+
+    expect(getAdsPowerStatus).toHaveBeenCalledTimes(2); // Initial load + refresh
+  });
+
+  test('handles Chrome path validation error', async () => {
+    validateChromePath.mockResolvedValue({
+      valid: false,
+      message: 'Chrome path is invalid',
+      path: null
+    });
+
+    const TestComponent = () => {
+      const methods = useForm({
+        defaultValues: {
+          browser_config: {
+            type: BrowserType.LocalCustom,
+            chrome_path: '/invalid/path'
+          }
+        }
+      });
+
+      return (
+        <FormProvider {...methods}>
+          <BrowserSelector control={methods.control} />
+        </FormProvider>
+      );
+    };
+
+    render(<TestComponent />, { wrapper: createWrapper() });
+
+    // Wait for Chrome path validation
+    await waitFor(() => {
+      expect(validateChromePath).toHaveBeenCalledWith('/invalid/path');
+    });
+
+    // Should show invalid path indicator
+    expect(screen.getByText('路径无效')).toBeInTheDocument();
+  });
+
+  test('displays correct common Chrome paths for different OS', () => {
+    const TestComponent = () => {
+      const methods = useForm({
+        defaultValues: {
+          browser_config: {
+            type: BrowserType.LocalCustom
+          }
+        }
+      });
+
+      return (
+        <FormProvider {...methods}>
+          <BrowserSelector control={methods.control} />
+        </FormProvider>
+      );
+    };
+
+    render(<TestComponent />, { wrapper: createWrapper() });
+
+    // Should show common Chrome paths
+    expect(screen.getByText('常见路径参考：')).toBeInTheDocument();
+    expect(screen.getByText('Windows:')).toBeInTheDocument();
+    expect(screen.getByText('macOS:')).toBeInTheDocument();
+    expect(screen.getByText('Linux:')).toBeInTheDocument();
+  });
+});

@@ -41,6 +41,7 @@ import {
 import { ProxySelector } from "@/components/ProxySelector";
 import { Switch } from "@/components/ui/switch";
 import { MAX_SCREENSHOT_SCROLLS_DEFAULT } from "@/routes/workflows/editor/nodes/Taskv2Node/types";
+import { BrowserSelector } from "@/components/BrowserSelector";
 type Props = {
   initialValues: CreateNewTaskFormValues;
 };
@@ -95,6 +96,7 @@ function createTaskRequestObject(
     max_screenshot_scrolls: formValues.maxScreenshotScrolls,
     include_action_history_in_verification:
       formValues.includeActionHistoryInVerification,
+    browser_config: formValues.browser_config ?? undefined,
   };
 }
 
@@ -129,6 +131,9 @@ function CreateNewTaskForm({ initialValues }: Props) {
       proxyLocation: initialValues.proxyLocation ?? ProxyLocation.Residential,
       maxScreenshotScrolls: initialValues.maxScreenshotScrolls ?? null,
       cdpAddress: initialValues.cdpAddress ?? null,
+      browser_config: initialValues.browser_config ?? {
+        type: "skyvern_default"
+      },
     },
   });
   const { errors } = useFormState({ control: form.control });
@@ -718,6 +723,34 @@ function CreateNewTaskForm({ initialValues }: Props) {
                               {...field}
                               placeholder="http://127.0.0.1:9222"
                               value={field.value === null ? "" : field.value}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </div>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <Separator />
+                <FormField
+                  control={form.control}
+                  name="browser_config"
+                  render={() => (
+                    <FormItem>
+                      <div className="flex gap-16">
+                        <FormLabel>
+                          <div className="w-72">
+                            <h1 className="text-lg">Browser Configuration</h1>
+                            <h2 className="text-base text-slate-400">
+                              Choose the browser type and configuration for this task
+                            </h2>
+                          </div>
+                        </FormLabel>
+                        <div className="w-full">
+                          <FormControl>
+                            <BrowserSelector
+                              control={form.control}
+                              name="browser_config"
                             />
                           </FormControl>
                           <FormMessage />

@@ -1,6 +1,15 @@
 import { ProxyLocation } from "@/api/types";
 import { z } from "zod";
 
+// 浏览器配置类型
+const browserConfigSchema = z.object({
+  type: z.enum(["skyvern_default", "local_custom", "adspower"]).default("skyvern_default"),
+  chrome_path: z.string().optional(),
+  chrome_args: z.array(z.string()).optional(),
+  adspower_user_id: z.string().optional(),
+  adspower_group_id: z.string().optional(),
+});
+
 const createNewTaskFormSchemaBase = z.object({
   url: z.string().url({
     message: "Invalid URL",
@@ -18,6 +27,7 @@ const createNewTaskFormSchemaBase = z.object({
   proxyLocation: z.nativeEnum(ProxyLocation).or(z.null()),
   includeActionHistoryInVerification: z.boolean().or(z.null()).default(false),
   maxScreenshotScrolls: z.number().or(z.null()).default(null),
+  browser_config: browserConfigSchema.optional(),
 });
 
 const savedTaskFormSchemaBase = createNewTaskFormSchemaBase.extend({

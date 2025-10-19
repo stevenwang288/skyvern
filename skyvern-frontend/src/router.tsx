@@ -5,7 +5,7 @@ import { DiscoverPage } from "./routes/discover/DiscoverPage";
 import { HistoryPage } from "./routes/history/HistoryPage";
 import { RootLayout } from "./routes/root/RootLayout";
 import { Settings } from "./routes/settings/Settings";
-import { CreateNewTaskFormPage } from "./routes/tasks/create/CreateNewTaskFormPage";
+import { TaskCreateWithSidebar } from "./routes/tasks/create/TaskCreateWithSidebar";
 import { RetryTask } from "./routes/tasks/create/retry/RetryTask";
 import { StepArtifactsLayout } from "./routes/tasks/detail/StepArtifactsLayout";
 import { TaskActions } from "./routes/tasks/detail/TaskActions";
@@ -59,7 +59,7 @@ const router = createBrowserRouter([
             children: [
               {
                 path: ":template",
-                element: <CreateNewTaskFormPage />,
+                element: <TaskCreateWithSidebar />,
               },
               {
                 path: "retry/:taskId",

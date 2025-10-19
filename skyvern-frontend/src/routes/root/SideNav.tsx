@@ -8,8 +8,14 @@ import {
   LightningBoltIcon,
 } from "@radix-ui/react-icons";
 import { KeyIcon } from "@/components/icons/KeyIcon.tsx";
+import { BrowserConfigSidebar } from "@/components/BrowserConfigSidebar";
+import { Control } from 'react-hook-form';
 
-function SideNav() {
+interface SideNavProps {
+  formControl?: Control<any>;
+}
+
+function SideNav({ formControl }: SideNavProps) {
   const { collapsed } = useSidebarStore();
 
   return (
@@ -38,6 +44,13 @@ function SideNav() {
           },
         ]}
       />
+
+      {formControl && (
+        <div className="space-y-2" key={`browser-config-${collapsed}`}>
+          <BrowserConfigSidebar control={formControl} />
+        </div>
+      )}
+
       <NavLinkGroup
         title={"General"}
         links={[

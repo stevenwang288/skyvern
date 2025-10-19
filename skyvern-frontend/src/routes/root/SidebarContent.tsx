@@ -6,12 +6,14 @@ import { SideNav } from "./SideNav";
 import { cn } from "@/util/utils";
 import { Button } from "@/components/ui/button";
 import { PinLeftIcon, PinRightIcon } from "@radix-ui/react-icons";
+import { Control } from 'react-hook-form';
 
 type Props = {
   useCollapsedState?: boolean;
+  formControl?: Control<any>;
 };
 
-function SidebarContent({ useCollapsedState }: Props) {
+function SidebarContent({ useCollapsedState, formControl }: Props) {
   const { collapsed: collapsedState, setCollapsed } = useSidebarStore();
   const collapsed = useCollapsedState ? collapsedState : false;
 
@@ -22,7 +24,7 @@ function SidebarContent({ useCollapsedState }: Props) {
           {collapsed ? <LogoMinimized /> : <Logo />}
         </div>
       </Link>
-      <SideNav />
+      <SideNav formControl={formControl} />
       <div
         className={cn("mt-auto flex min-h-16", {
           "justify-center": collapsed,

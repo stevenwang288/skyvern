@@ -1,8 +1,13 @@
 import { useSidebarStore } from "@/store/SidebarStore";
 import { cn } from "@/util/utils";
 import { SidebarContent } from "./SidebarContent";
+import { Control } from 'react-hook-form';
 
-function Sidebar() {
+type SidebarProps = {
+  formControl?: Control<any>;
+};
+
+function Sidebar({ formControl }: SidebarProps) {
   const collapsed = useSidebarStore((state) => state.collapsed);
 
   return (
@@ -15,7 +20,7 @@ function Sidebar() {
         },
       )}
     >
-      <SidebarContent useCollapsedState />
+      <SidebarContent useCollapsedState formControl={formControl} />
     </aside>
   );
 }

@@ -11,6 +11,9 @@ export const blank = {
   totpIdentifier: null,
   totpVerificationUrl: null,
   errorCodeMapping: null,
+  browser_config: {
+    type: "skyvern_default" as const
+  },
 };
 
 export const bci_seguros = {
