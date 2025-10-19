@@ -1,0 +1,12 @@
+﻿{
+    "MCPChoiceName":  "跳过MCP设置      不做MCP配置，继续后续流程",
+    "ProviderKey":  "ms-fb3172ba-cb44-4675-b23b-cc505ffde93e",
+    "ProviderName":  "modelscope9",
+    "MCPChoice":  0,
+    "LastUsedDate":  "2025-10-19 23:29:51",
+    "Terminal":  "Windows Terminal",
+    "ProviderUrl":  "https://api-inference.modelscope.cn/v1",
+    "Model":  "glm-4.6",
+    "WorkingDir":  "D:\\OneDrive\\steven\\code\\1\\ads2\\skyvern-main",
+    "ProviderId":  9
+}
