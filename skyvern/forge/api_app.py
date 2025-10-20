@@ -22,6 +22,8 @@ from skyvern.forge.sdk.core.skyvern_context import SkyvernContext
 from skyvern.forge.sdk.db.exceptions import NotFoundError
 from skyvern.forge.sdk.routes import internal_auth
 from skyvern.forge.sdk.routes.routers import base_router, legacy_base_router, legacy_v2_router
+# 导入浏览器路由模块以确保在启动时注册路由
+from skyvern.forge.sdk.routes import browser
 
 LOG = structlog.get_logger()
 

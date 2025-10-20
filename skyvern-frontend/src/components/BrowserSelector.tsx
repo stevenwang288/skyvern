@@ -20,20 +20,46 @@ interface BrowserSelectorProps {
 export function BrowserSelector({ control, name = "browser_config" }: BrowserSelectorProps) {
   const credentialGetter = useCredentialGetter();
   const [hasError, setHasError] = useState(false);
+  const [isMounted, setIsMounted] = useState(true);
 
-  // 组件卸载时清理状态
+  // 错误捕获
   useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      if (event.error?.message?.includes('removeChild')) {
+        event.preventDefault();
+        if (isMounted) {
+          setHasError(true);
+        }
+      }
+    };
+
+    window.addEventListener('error', handleError);
     return () => {
-      // 清理任何可能的状态
-      setHasError(false);
+      window.removeEventListener('error', handleError);
+    };
+  }, [isMounted]);
+
+  // 组件挂载和卸载管理
+  useEffect(() => {
+    setIsMounted(true);
+    return () => {
+      setIsMounted(false);
     };
   }, []);
 
   // 错误边界处理
   if (hasError) {
     return (
-      <div className="text-red-500 text-sm p-2 bg-red-50 rounded border border-red-200">
-        Browser selector encountered an error. Please refresh the page.
+      <div className="text-red-500 text-sm p-4 bg-red-50 rounded border border-red-200">
+        <div className="font-medium mb-2">浏览器选择器遇到错误</div>
+        <div className="text-xs mb-2">这可能是由于组件渲染冲突导致的</div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => window.location.reload()}
+        >
+          刷新页面
+        </Button>
       </div>
     );
   }
@@ -56,7 +82,7 @@ export function BrowserSelector({ control, name = "browser_config" }: BrowserSel
   } = useQuery({
     queryKey: ["adspower-status"],
     queryFn: async () => {
-      if (!credentialGetter) {
+      if (!isMounted || !credentialGetter) {
         return { available: false, message: 'No credentials available', browsers: [] };
       }
       try {
@@ -81,7 +107,7 @@ export function BrowserSelector({ control, name = "browser_config" }: BrowserSel
   } = useQuery({
     queryKey: ["chrome-path-validation", chromePath],
     queryFn: async () => {
-      if (!credentialGetter) {
+      if (!isMounted || !credentialGetter) {
         return { valid: false, message: 'No credentials available' };
       }
       try {

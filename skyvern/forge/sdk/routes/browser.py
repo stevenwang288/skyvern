@@ -1,9 +1,9 @@
 # 5. API路由扩展 (新建 skyvern/forge/sdk/routes/browser.py)
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from pathlib import Path
 from skyvern.forge.sdk.schemas.browser import AdsPowerStatus, BrowserConfig
 from skyvern.webeye.adspower_service import AdsPowerService
-from skyvern.forge.sdk.api.models import validate_api_key
+from skyvern.forge.sdk.routes.routers import base_router
 import structlog
 
 LOG = structlog.get_logger()
@@ -11,10 +11,8 @@ LOG = structlog.get_logger()
 router = APIRouter()
 
 
-@router.get("/adspower/status", response_model=AdsPowerStatus)
-async def get_adspower_status(
-    api_key: str = Depends(validate_api_key)
-) -> AdsPowerStatus:
+@base_router.get("/browser/adspower/status", response_model=AdsPowerStatus)
+async def get_adspower_status() -> AdsPowerStatus:
     """
     获取AdsPower服务状态和可用浏览器列表
 
@@ -33,10 +31,9 @@ async def get_adspower_status(
         raise HTTPException(status_code=500, detail=f"获取AdsPower状态失败: {str(e)}")
 
 
-@router.post("/validate-chrome-path")
+@base_router.post("/browser/validate-chrome-path")
 async def validate_chrome_path(
-    chrome_path: str,
-    api_key: str = Depends(validate_api_key)
+    chrome_path: str
 ) -> dict:
     """
     验证Chrome路径是否有效

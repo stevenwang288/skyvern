@@ -11,6 +11,7 @@ from skyvern.forge.sdk.schemas.tasks import Task
 from skyvern.forge.sdk.workflow.models.workflow import WorkflowRun
 from skyvern.schemas.runs import ProxyLocation
 from skyvern.webeye.browser_factory import BrowserContextFactory, BrowserState, VideoArtifact
+from skyvern.forge.sdk.schemas.browser import BrowserConfig, BrowserType
 
 LOG = structlog.get_logger()
 
@@ -34,14 +35,27 @@ class BrowserManager:
         organization_id: str | None = None,
         extra_http_headers: dict[str, str] | None = None,
         browser_address: str | None = None,
+        browser_config: BrowserConfig | None = None,
     ) -> BrowserState:
         pw = await async_playwright().start()
+        # 根据browser_config确定浏览器类型
+        browser_type = "chromium-headful"  # 默认类型
+        if browser_config:
+            if browser_config.type == BrowserType.ADSPOWER:
+                browser_type = "adspower"
+            elif browser_config.type == BrowserType.LOCAL_CUSTOM:
+                browser_type = "local-custom"
+            else:
+                # SKYVERN_DEFAULT 使用现有逻辑
+                browser_type = "chromium-headful"
+
         (
             browser_context,
             browser_artifacts,
             browser_cleanup,
         ) = await BrowserContextFactory.create_browser_context(
             pw,
+            browser_type=browser_type,
             proxy_location=proxy_location,
             url=url,
             task_id=task_id,
@@ -50,6 +64,7 @@ class BrowserManager:
             organization_id=organization_id,
             extra_http_headers=extra_http_headers,
             browser_address=browser_address,
+            browser_config=browser_config,
         )
         return BrowserState(
             pw=pw,
@@ -116,6 +131,7 @@ class BrowserManager:
                 organization_id=task.organization_id,
                 extra_http_headers=task.extra_http_headers,
                 browser_address=task.browser_address,
+                browser_config=task.browser_config,
             )
 
             if browser_session_id:
