@@ -1,12 +1,12 @@
 ﻿{
     "MCPChoiceName":  "跳过MCP设置      不做MCP配置，继续后续流程",
-    "ProviderKey":  "sk-d1fff71e09471b95ce05897ccf0d0a94",
-    "ProviderName":  "iflow1",
+    "ProviderKey":  "sk-8f548a8273272b764511b8655dc03dbe",
+    "ProviderName":  "iflow2",
     "MCPChoice":  0,
-    "LastUsedDate":  "2025-10-20 14:07:39",
+    "LastUsedDate":  "2025-10-20 17:03:08",
     "Terminal":  "Windows Terminal",
     "ProviderUrl":  "https://apis.iflow.cn/v1",
-    "Model":  "glm-4.6",
+    "Model":  "qwen3-coder-plus",
     "WorkingDir":  "D:\\OneDrive\\steven\\code\\1\\ads2\\skyvern-main",
-    "ProviderId":  1
+    "ProviderId":  2
 }
